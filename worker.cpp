@@ -34,6 +34,9 @@ void worker::load_config(config * conf) {
 	keepalive_enabled = conf->get_uint("keepalive_timeout") != 0;
 	site_password = conf->get_str("site_password");
 	report_password = conf->get_str("report_password");
+	sitefree = conf->get_bool("sitefree");
+	sitedouble = conf->get_bool("sitedouble");
+	sitehalf = conf->get_bool("sitehalf");
 }
 
 void worker::reload_config(config * conf) {
@@ -431,6 +434,12 @@ std::string worker::announce(const std::string &input, torrent &tor, user_ptr &u
 			if (tor.free_torrent == NEUTRAL) {
 				downloaded_change = 0;
 				uploaded_change = 0;
+			} else if (sitefree) {
+				downloaded_change = 0;
+			} else if (sitehalf) {
+				downloaded_change = downloaded_change / 2;
+			} else if (sitedouble) {
+				uploaded_change = uploaded_change * 2;
 			} else if (tor.free_torrent == FREE || sit != tor.tokened_users.end() || freeuser > 0) {
 				if (sit != tor.tokened_users.end()) {
 					expire_token = true;

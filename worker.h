@@ -33,6 +33,9 @@ class worker {
 		bool keepalive_enabled;
 		std::string site_password;
 		std::string report_password;
+		bool sitefree;
+		bool sitedouble;
+		bool sitehalf;
 
 		std::mutex del_reasons_lock;
 		void load_config(config * conf);

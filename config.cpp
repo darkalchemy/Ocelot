@@ -88,6 +88,9 @@ void config::init() {
 
 	// Debugging
 	add("readonly", false);
+	add("sitefree", false);
+	add("sitedouble", false);
+	add("sitehalf", false);
 }
 
 confval * config::get(const std::string &setting_name) {
