@@ -43,7 +43,7 @@ void schedule::handle(ev::timer &watcher, int events_flags) {
 	last_request_count = stats.requests;
 
 	db->flush();
-	sc->flush_tokens();
+	//sc->flush_tokens();
 
 	next_reap_peers -= cur_schedule_interval;
 	if (next_reap_peers <= 0) {
