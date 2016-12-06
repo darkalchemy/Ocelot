@@ -434,8 +434,14 @@ std::string worker::announce(const std::string &input, torrent &tor, user_ptr &u
 			if (tor.free_torrent == NEUTRAL) {
 				downloaded_change = 0;
 				uploaded_change = 0;
+			} else if (sitefree && sitedouble) {
+				downloaded_change = 0;
+				uploaded_change = uploaded_change * 2;
 			} else if (sitefree) {
 				downloaded_change = 0;
+			} else if (sitehalf && sitedouble) {
+				downloaded_change = downloaded_change / 2;
+				uploaded_change = uploaded_change * 2;
 			} else if (sitehalf) {
 				downloaded_change = downloaded_change / 2;
 			} else if (sitedouble) {
