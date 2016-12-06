@@ -286,6 +286,7 @@ std::string worker::announce(const std::string &input, torrent &tor, user_ptr &u
 	bool invalid_ip = false;
 	bool inc_l = false, inc_s = false, dec_l = false, dec_s = false;
 	userid_t userid = u->get_id();
+	bool freeuser = u->get_free_switch();
 
 	params_type::const_iterator peer_id_iterator = params.find("peer_id");
 	if (peer_id_iterator == params.end()) {
@@ -430,7 +431,7 @@ std::string worker::announce(const std::string &input, torrent &tor, user_ptr &u
 			if (tor.free_torrent == NEUTRAL) {
 				downloaded_change = 0;
 				uploaded_change = 0;
-			} else if (tor.free_torrent == FREE || sit != tor.tokened_users.end()) {
+			} else if (tor.free_torrent == FREE || sit != tor.tokened_users.end() || freeuser > 0) {
 				if (sit != tor.tokened_users.end()) {
 					expire_token = true;
 					std::stringstream record;
@@ -899,7 +900,8 @@ std::string worker::update(params_type &params, client_opts_t &client_opts) {
 		auto u = users_list.find(passkey);
 		if (u == users_list.end()) {
 			bool protect_ip = params["visible"] == "0";
-			user_ptr tmp_user = std::make_shared<user>(userid, true, protect_ip);
+			bool free_switch = params["free_switch"] > "0";
+			user_ptr tmp_user = std::make_shared<user>(userid, true, protect_ip, free_switch);
 			users_list.insert(std::pair<std::string, user_ptr>(passkey, tmp_user));
 			std::cout << "Added user " << passkey << " with id " << userid << std::endl;
 		} else {
@@ -932,6 +934,7 @@ std::string worker::update(params_type &params, client_opts_t &client_opts) {
 		std::string passkey = params["passkey"];
 		bool can_leech = true;
 		bool protect_ip = false;
+		bool free_switch = params["free_switch"] > "0";
 		if (params["can_leech"] == "0") {
 			can_leech = false;
 		}
@@ -945,6 +948,7 @@ std::string worker::update(params_type &params, client_opts_t &client_opts) {
 		} else {
 			i->second->set_protected(protect_ip);
 			i->second->set_leechstatus(can_leech);
+			i->second->set_free_switch(free_switch);
 			std::cout << "Updated user " << passkey << std::endl;
 		}
 	} else if (params["action"] == "add_whitelist") {

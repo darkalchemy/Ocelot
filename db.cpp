@@ -72,7 +72,7 @@ void mysql::clear_peer_data() {
 }
 
 void mysql::load_torrents(torrent_list &torrents) {
-	mysqlpp::Query query = conn.query("SELECT ID, info_hash, freetorrent, Snatched FROM torrents ORDER BY ID;");
+	mysqlpp::Query query = conn.query("SELECT id, info_hash, freetorrent, Snatched FROM torrents ORDER BY ID;");
 	try {
 		mysqlpp::StoreQueryResult res = query.store();
 		std::unordered_set<std::string> cur_keys;
@@ -140,7 +140,7 @@ void mysql::load_torrents(torrent_list &torrents) {
 }
 
 void mysql::load_users(user_list &users) {
-	mysqlpp::Query query = conn.query("SELECT ID, can_leech, torrent_pass, (Visible='0' OR IP='127.0.0.1') AS Protected FROM users_main WHERE Enabled='1';");
+	mysqlpp::Query query = conn.query("SELECT id, can_leech, torrent_pass, (privacy!='normal' OR ip='127.0.0.1') AS Protected, free_switch FROM users WHERE enabled='yes';");
 	try {
 		mysqlpp::StoreQueryResult res = query.store();
 		size_t num_rows = res.num_rows();
@@ -158,7 +158,8 @@ void mysql::load_users(user_list &users) {
 		for (size_t i = 0; i < num_rows; i++) {
 			std::string passkey(res[i][2]);
 			bool protect_ip = res[i][3];
-			user_ptr tmp_user = std::make_shared<user>(res[i][0], res[i][1], protect_ip);
+			bool free_switch = res[i][4];
+			user_ptr tmp_user = std::make_shared<user>(res[i][0], res[i][1], protect_ip, free_switch);
 			auto it = users.insert(std::pair<std::string, user_ptr>(passkey, tmp_user));
 			if (!it.second) {
 				user_ptr &u = (it.first)->second;
@@ -184,7 +185,7 @@ void mysql::load_users(user_list &users) {
 }
 
 void mysql::load_tokens(torrent_list &torrents) {
-	mysqlpp::Query query = conn.query("SELECT uf.UserID, t.info_hash FROM users_freeleeches AS uf JOIN torrents AS t ON t.ID = uf.TorrentID WHERE uf.Expired = '0';");
+	mysqlpp::Query query = conn.query("SELECT fs.userid, t.info_hash FROM freeslots AS fs JOIN torrents AS t ON t.id = fs.torrentid WHERE fs.addedfree > 0;");
 	int token_count = 0;
 	try {
 		mysqlpp::StoreQueryResult res = query.store();
@@ -307,8 +308,8 @@ void mysql::flush_users() {
 	if (update_user_buffer == "") {
 		return;
 	}
-	sql = "INSERT INTO users_main (ID, Uploaded, Downloaded) VALUES " + update_user_buffer +
-		" ON DUPLICATE KEY UPDATE Uploaded = Uploaded + VALUES(Uploaded), Downloaded = Downloaded + VALUES(Downloaded)";
+	sql = "INSERT INTO users (id, uploaded, downloaded) VALUES " + update_user_buffer +
+		" ON DUPLICATE KEY UPDATE uploaded = uploaded + VALUES(uploaded), downloaded = downloaded + VALUES(downloaded)";
 	user_queue.push(sql);
 	update_user_buffer.clear();
 	if (u_active == false) {
@@ -332,9 +333,9 @@ void mysql::flush_torrents() {
 	if (update_torrent_buffer == "") {
 		return;
 	}
-	sql = "INSERT INTO torrents (ID,Seeders,Leechers,Snatched,Balance) VALUES " + update_torrent_buffer +
-		" ON DUPLICATE KEY UPDATE Seeders=VALUES(Seeders), Leechers=VALUES(Leechers), " +
-		"Snatched=Snatched+VALUES(Snatched), Balance=VALUES(Balance), last_action = " +
+	sql = "INSERT INTO torrents (id,seeders,leechers,times_completed,balance) VALUES " + update_torrent_buffer +
+		" ON DUPLICATE KEY UPDATE seeders=VALUES(seeders), leechers=VALUES(leechers), " +
+		"times_completed=times_completed+VALUES(times_completed), balance=VALUES(balance), last_action = " +
 		"IF(VALUES(Seeders) > 0, NOW(), last_action)";
 	torrent_queue.push(sql);
 	update_torrent_buffer.clear();
@@ -396,12 +397,12 @@ void mysql::flush_peers() {
 		if (qsize >= 1000) {
 			peer_queue.pop();
 		}
-		sql = "INSERT INTO xbt_files_users (uid,fid,active,uploaded,downloaded,upspeed,downspeed,remaining,corrupt," +
-			std::string("timespent,announced,ip,peer_id,useragent,mtime) VALUES ") + update_heavy_peer_buffer +
+		sql = "INSERT INTO xbt_files_users (uid,fid,active,uploaded,downloaded,upspeed,downspeed,`left`,corrupt," +
+			std::string("leechtime,announced,ip,peer_id,useragent,mtime) VALUES ") + update_heavy_peer_buffer +
 					" ON DUPLICATE KEY UPDATE active=VALUES(active), uploaded=VALUES(uploaded), " +
 					"downloaded=VALUES(downloaded), upspeed=VALUES(upspeed), " +
-					"downspeed=VALUES(downspeed), remaining=VALUES(remaining), " +
-					"corrupt=VALUES(corrupt), timespent=VALUES(timespent), " +
+					"downspeed=VALUES(downspeed), `left`=VALUES(`left`), " +
+					"corrupt=VALUES(corrupt), leechtime=VALUES(leechtime), " +
 					"announced=VALUES(announced), mtime=VALUES(mtime)";
 		peer_queue.push(sql);
 		update_heavy_peer_buffer.clear();
@@ -412,9 +413,9 @@ void mysql::flush_peers() {
 		if (qsize >= 1000) {
 			peer_queue.pop();
 		}
-		sql = "INSERT INTO xbt_files_users (uid,fid,timespent,announced,peer_id,mtime) VALUES " +
+		sql = "INSERT INTO xbt_files_users (uid,fid,leechtime,announced,peer_id,mtime) VALUES " +
 					update_light_peer_buffer +
-					" ON DUPLICATE KEY UPDATE upspeed=0, downspeed=0, timespent=VALUES(timespent), " +
+					" ON DUPLICATE KEY UPDATE upspeed=0, downspeed=0, leechtime=VALUES(leechtime), " +
 					"announced=VALUES(announced), mtime=VALUES(mtime)";
 		peer_queue.push(sql);
 		update_light_peer_buffer.clear();

@@ -10,13 +10,16 @@ class user {
 		bool deleted;
 		bool leechstatus;
 		bool protect_ip;
+		bool free_switch;
 		struct {
 			std::atomic<uint32_t> leeching;
 			std::atomic<uint32_t> seeding;
 		} stats;
 	public:
-		user(userid_t uid, bool leech, bool protect);
+		user(userid_t uid, bool leech, bool protect, bool freeswitch);
 		userid_t get_id() { return id; }
+		bool get_free_switch() { return free_switch; }
+		void set_free_switch(bool freeswitch) { free_switch = freeswitch; }
 		bool is_deleted() { return deleted; }
 		void set_deleted(bool status) { deleted = status; }
 		bool is_protected() { return protect_ip; }
