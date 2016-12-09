@@ -56,7 +56,7 @@ bool mysql::connected() {
 
 void mysql::clear_peer_data() {
 	try {
-		mysqlpp::Query query = conn.query("TRUNCATE xbt_files_users;");
+		mysqlpp::Query query = conn.query("UPDATE xbt_files_users SET `active` = 0;");
 		if (!query.exec()) {
 			std::cerr << "Unable to truncate xbt_files_users!" << std::endl;
 		}
