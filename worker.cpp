@@ -238,8 +238,7 @@ std::string worker::work(const std::string &input, std::string &ip, client_opts_
 	if (action == LOAD) {
 		if (passkey == site_password) {
 			raise( SIGHUP);
-			client_opts.html = true;
-			return response("Config Reloaded", client_opts);
+			return response("success", client_opts);
 		} else {
 			return error("Authentication failure", client_opts);
 		}
