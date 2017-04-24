@@ -89,7 +89,7 @@ std::string worker::work(const std::string &input, std::string &ip, client_opts_
 
 	// Get the action
 	enum action_t {
-		INVALID = 0, ANNOUNCE, SCRAPE, UPDATE, REPORT
+		INVALID = 0, ANNOUNCE, SCRAPE, UPDATE, REPORT, LOAD
 	};
 	action_t action = INVALID;
 
@@ -111,6 +111,10 @@ std::string worker::work(const std::string &input, std::string &ip, client_opts_
 		case 'r':
 			action = REPORT;
 			pos += 6;
+			break;
+		case 'l':
+			action = LOAD;
+			pos += 4;
 			break;
 	}
 
@@ -226,6 +230,16 @@ std::string worker::work(const std::string &input, std::string &ip, client_opts_
 		if (passkey == report_password) {
 			std::lock_guard<std::mutex> ul_lock(db->user_list_mutex);
 			return report(params, users_list, client_opts);
+		} else {
+			return error("Authentication failure", client_opts);
+		}
+	}
+
+	if (action == LOAD) {
+		if (passkey == site_password) {
+			raise( SIGHUP);
+			client_opts.html = true;
+			return response("Config Reloaded", client_opts);
 		} else {
 			return error("Authentication failure", client_opts);
 		}
