@@ -415,7 +415,7 @@ void mysql::flush_peers() {
 		}
 		sql = "INSERT INTO xbt_files_users (uid,fid,leechtime,announced,peer_id,mtime) VALUES " +
 					update_light_peer_buffer +
-					" ON DUPLICATE KEY UPDATE upspeed=0, downspeed=0, leechtime=VALUES(leechtime), " +
+					" ON DUPLICATE KEY UPDATE upspeed=0, downspeed=0, active=1, leechtime=VALUES(leechtime), " +
 					"announced=VALUES(announced), mtime=VALUES(mtime)";
 		peer_queue.push(sql);
 		update_light_peer_buffer.clear();
