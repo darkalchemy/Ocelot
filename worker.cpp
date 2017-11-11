@@ -229,7 +229,7 @@ std::string worker::work(const std::string &input, std::string &ip, client_opts_
 	if (action == REPORT) {
 		if (passkey == report_password) {
 			std::lock_guard<std::mutex> ul_lock(db->user_list_mutex);
-			return report(params, users_list, client_opts);
+			return report(params, users_list, client_opts, torrents_list);
 		} else {
 			return error("Authentication failure", client_opts);
 		}

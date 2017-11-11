@@ -7,7 +7,7 @@
 #include "response.h"
 #include "user.h"
 
-std::string report(params_type &params, user_list &users_list, client_opts_t &client_opts) {
+std::string report(params_type &params, user_list &users_list, client_opts_t &client_opts, torrent_list &torrents) {
 	std::stringstream output;
 	std::string action = params["get"];
 	if (action == "") {
@@ -23,6 +23,8 @@ std::string report(params_type &params, user_list &users_list, client_opts_t &cl
 		std::string up_ht = up_h <= 9 ? '0' + inttostr(up_h) : inttostr(up_h);
 		std::string up_mt = up_m <= 9 ? '0' + inttostr(up_m) : inttostr(up_m);
 		std::string up_st = up_s <= 9 ? '0' + inttostr(up_s) : inttostr(up_s);
+		int ucount = users_list.size();
+		int tcount = torrents.size();
 
 		output << "Uptime: " << up_d << " days, " << up_ht << ':' << up_mt << ':' << up_st << '\n'
 		<< stats.opened_connections << " connections opened\n"
@@ -36,7 +38,9 @@ std::string report(params_type &params, user_list &users_list, client_opts_t &cl
 		<< stats.leechers << " leechers tracked\n"
 		<< stats.seeders << " seeders tracked\n"
 		<< stats.bytes_read << " bytes read\n"
-		<< stats.bytes_written << " bytes written\n";
+		<< stats.bytes_written << " bytes written\n"
+		<< ucount << " users\n"
+		<< tcount << " torrents\n";
 	} else if (action == "user") {
 		std::string key = params["key"];
 		if (key == "") {
