@@ -263,12 +263,12 @@ void mysql::record_peer(const std::string &record, const std::string &ip, const 
 
 	update_heavy_peer_buffer += q.str();
 }
-void mysql::record_peer(const std::string &record, const std::string &peer_id) {
+void mysql::record_peer(const std::string &record, const std::string &ip, const std::string &peer_id) {
 	if (update_light_peer_buffer != "") {
 		update_light_peer_buffer += ",";
 	}
 	mysqlpp::Query q = conn.query();
-	q << record << mysqlpp::quote << peer_id << ',' << time(NULL) << ')';
+	q << record << mysqlpp::quote << ip << ',' mysqlpp::quote << peer_id << ',' << time(NULL) << ')';
 
 	update_light_peer_buffer += q.str();
 }
@@ -413,10 +413,10 @@ void mysql::flush_peers() {
 		if (qsize >= 1000) {
 			peer_queue.pop();
 		}
-		sql = "INSERT INTO xbt_files_users (uid,fid,leechtime,announced,peer_id,mtime) VALUES " +
+		sql = "INSERT INTO xbt_files_users (uid,fid,leechtime,announced,ip,peer_id,mtime) VALUES " +
 					update_light_peer_buffer +
 					" ON DUPLICATE KEY UPDATE upspeed=0, downspeed=0, active=1, leechtime=VALUES(leechtime), " +
-					"announced=VALUES(announced), mtime=VALUES(mtime)";
+					"announced=VALUES(announced), mtime=VALUES(mtime), ip=VALUES(ip)";
 		peer_queue.push(sql);
 		update_light_peer_buffer.clear();
 		sql.clear();

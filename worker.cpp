@@ -548,7 +548,7 @@ std::string worker::announce(const std::string &input, torrent &tor, user_ptr &u
 	} else {
 		record << '(' << userid << ',' << tor.id << ',' << (cur_time - p->first_announced) << ',' << p->announces << ',';
 		std::string record_str = record.str();
-		db->record_peer(record_str, peer_id);
+		db->record_peer(record_str, record_ip, peer_id);
 	}
 
 	// Select peers!
