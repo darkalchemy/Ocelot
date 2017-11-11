@@ -403,7 +403,7 @@ void mysql::flush_peers() {
 					"downloaded=VALUES(downloaded), upspeed=VALUES(upspeed), " +
 					"downspeed=VALUES(downspeed), `left`=VALUES(`left`), " +
 					"corrupt=VALUES(corrupt), leechtime=VALUES(leechtime), " +
-					"announced=VALUES(announced), mtime=VALUES(mtime)";
+					"announced=VALUES(announced), mtime=VALUES(mtime), ip=VALUES(ip)";
 		peer_queue.push(sql);
 		update_heavy_peer_buffer.clear();
 		sql.clear();
