@@ -268,7 +268,7 @@ void mysql::record_peer(const std::string &record, const std::string &ip, const 
 		update_light_peer_buffer += ",";
 	}
 	mysqlpp::Query q = conn.query();
-	q << record << mysqlpp::quote << ip << ',' mysqlpp::quote << peer_id << ',' << time(NULL) << ')';
+	q << record << mysqlpp::quote << ip << ',' << mysqlpp::quote << peer_id << ',' << time(NULL) << ')';
 
 	update_light_peer_buffer += q.str();
 }
