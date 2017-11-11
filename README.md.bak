@@ -12,7 +12,25 @@ Ocelot is a BitTorrent tracker written in C++ for the [Gazelle](http://whatcd.gi
 
 ## Installation
 
-The [U-232 README.MD](https://github.com/Bigjoos/U-232-V5) include instructions for installing Ocelot as a part of the U-232 project.
+The [Gazelle installation guides](https://github.com/WhatCD/Gazelle/wiki/Gazelle-installation) include instructions for installing Ocelot as a part of the Gazelle project.
+
+### Standalone Installation
+
+* Create the following tables according to the [Gazelle database schema](https://raw.githubusercontent.com/WhatCD/Gazelle/master/gazelle.sql):
+ - `torrents`
+ - `users_freeleeches`
+ - `users_main`
+ - `xbt_client_whitelist`
+ - `xbt_files_users`
+ - `xbt_snatched`
+
+* Edit `ocelot.conf` to your liking.
+
+* Build Ocelot:
+
+        ./configure
+        make
+        make install
 
 ## Running Ocelot
 
