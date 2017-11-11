@@ -548,6 +548,12 @@ std::string worker::announce(const std::string &input, torrent &tor, user_ptr &u
 	} else {
 		record << '(' << userid << ',' << tor.id << ',' << (cur_time - p->first_announced) << ',' << p->announces << ',';
 		std::string record_str = record.str();
+		std::string record_ip;
+		if (u->is_protected()) {
+			record_ip = "";
+		} else {
+			record_ip = ip;
+		}
 		db->record_peer(record_str, record_ip, peer_id);
 	}
 
