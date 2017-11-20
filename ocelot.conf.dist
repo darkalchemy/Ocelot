@@ -20,7 +20,7 @@ mysql_username      =
 mysql_password      = 
 mysql_db            = 
 
-# The passwords must be 32 characters and match the Gazelle config
+# The passwords must be 32 characters and match the U-232 config
 report_password     = 00000000000000000000000000000000
 site_password       = 00000000000000000000000000000000
 
