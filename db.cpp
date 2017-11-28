@@ -398,12 +398,12 @@ void mysql::flush_peers() {
 			peer_queue.pop();
 		}
 		sql = "INSERT INTO xbt_files_users (uid,fid,active,uploaded,downloaded,upspeed,downspeed,`left`,corrupt," +
-			std::string("leechtime,announced,ip,peer_id,useragent,mtime) VALUES ") + update_heavy_peer_buffer +
+			std::string("announced,seedtime,leechtime,ip,peer_id,useragent,mtime) VALUES ") + update_heavy_peer_buffer +
 					" ON DUPLICATE KEY UPDATE active=VALUES(active), uploaded=VALUES(uploaded), " +
 					"downloaded=VALUES(downloaded), upspeed=VALUES(upspeed), " +
 					"downspeed=VALUES(downspeed), `left`=VALUES(`left`), " +
-					"corrupt=VALUES(corrupt), leechtime=VALUES(leechtime), " +
-					"announced=VALUES(announced), mtime=VALUES(mtime), ip=VALUES(ip)";
+					"corrupt=VALUES(corrupt), leechtime=leechtime+VALUES(leechtime), " +
+					"announced=VALUES(announced), mtime=VALUES(mtime), ip=VALUES(ip), seedtime=seedtime+VALUES(seedtime)";
 		peer_queue.push(sql);
 		update_heavy_peer_buffer.clear();
 		sql.clear();
@@ -413,10 +413,10 @@ void mysql::flush_peers() {
 		if (qsize >= 1000) {
 			peer_queue.pop();
 		}
-		sql = "INSERT INTO xbt_files_users (uid,fid,leechtime,announced,ip,peer_id,mtime) VALUES " +
+		sql = "INSERT INTO xbt_files_users (uid,fid,announced,seedtime,leechtime,ip,peer_id,mtime) VALUES " +
 					update_light_peer_buffer +
-					" ON DUPLICATE KEY UPDATE upspeed=0, downspeed=0, active=1, leechtime=VALUES(leechtime), " +
-					"announced=VALUES(announced), mtime=VALUES(mtime), ip=VALUES(ip)";
+					" ON DUPLICATE KEY UPDATE upspeed=0, downspeed=0, active=1, leechtime=leechtime+VALUES(leechtime), " +
+					"announced=VALUES(announced), mtime=VALUES(mtime), ip=VALUES(ip), seedtime=seedtime+VALUES(seedtime)";
 		peer_queue.push(sql);
 		update_light_peer_buffer.clear();
 		sql.clear();

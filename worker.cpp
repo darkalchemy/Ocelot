@@ -529,6 +529,22 @@ std::string worker::announce(const std::string &input, torrent &tor, user_ptr &u
 		invalid_ip = p->invalid_ip;
 	}
 
+	// Add in Seedtime
+	int64_t leechtime = 0;
+	int64_t seedtime = 0;
+	if (p->last_announced == 0) {
+        p->last_announced = cur_time;
+	}
+	if (params["event"] != "started") {
+		if (left > 0 || completed_torrent) {
+			leechtime = cur_time - p->last_announced;
+			seedtime = 0;
+		} else {
+			leechtime = 0;
+			seedtime = cur_time - p->last_announced;
+		}
+	}
+	
 	// Update the peer
 	p->last_announced = cur_time;
 	p->visible = peer_is_visible(u, p);
@@ -536,7 +552,7 @@ std::string worker::announce(const std::string &input, torrent &tor, user_ptr &u
 	// Add peer data to the database
 	std::stringstream record;
 	if (peer_changed) {
-		record << '(' << userid << ',' << tor.id << ',' << active << ',' << uploaded << ',' << downloaded << ',' << upspeed << ',' << downspeed << ',' << left << ',' << corrupt << ',' << (cur_time - p->first_announced) << ',' << p->announces << ',';
+		record << '(' << userid << ',' << tor.id << ',' << active << ',' << uploaded << ',' << downloaded << ',' << upspeed << ',' << downspeed << ',' << left << ',' << corrupt << ',' << p->announces << ',' << seedtime << ',' << leechtime << ',';
 		std::string record_str = record.str();
 		std::string record_ip;
 		if (u->is_protected()) {
@@ -546,7 +562,7 @@ std::string worker::announce(const std::string &input, torrent &tor, user_ptr &u
 		}
 		db->record_peer(record_str, record_ip, peer_id, headers["user-agent"]);
 	} else {
-		record << '(' << userid << ',' << tor.id << ',' << (cur_time - p->first_announced) << ',' << p->announces << ',';
+		record << '(' << userid << ',' << tor.id << ',' << p->announces << ',' << seedtime << ',' << leechtime << ',';
 		std::string record_str = record.str();
 		std::string record_ip;
 		if (u->is_protected()) {
